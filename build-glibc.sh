@@ -4,11 +4,15 @@ set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
 usage() {
-    echo "usage: $(basename "$0") ARCH VERSION
+    echo "usage: $(basename "$0") ARCH VERSION [OPTIONS...]
 
 Arguments:
-    ARCH              Architecture to build glibc on.
-    VERSION           Version of glibc to build.
+    ARCH                Architecture to build glibc on.
+    VERSION             Version of glibc to build.
+
+Options:
+    -o, --output FILE   Redirect all compilation output to FILE.
+    -h, --help          Display this help and exit.
 "
 }
 
@@ -19,10 +23,53 @@ running_in_docker() {
 SCRIPT="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 
-ARCH="${1:-UNSET}"
-GLIBC_VERSION="${2:-UNSET}"
-GLIBC_URL="http://ftp.gnu.org/gnu/glibc/glibc-$GLIBC_VERSION.tar.gz"
+STD_OUTPUT="/dev/stdout"
+ERR_OUTPUT="/dev/stderr"
+
+ARCH=UNSET
+GLIBC_VERSION=UNSET
 GLIBC_CONFIGURE_EXTRA_OPTS=
+
+# Parse arguments.
+while [ $# -gt 0 ]
+do
+    key="$1"
+
+    case $key in
+        -o|--output)
+            value="${2:-UNSET}"
+            if [ "$value" = "UNSET" ]; then
+                echo "ERROR: Missing output file."
+                usage
+                exit 1
+            fi
+            STD_OUTPUT="$value"
+            ERR_OUTPUT="/dev/stdout"
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -*)
+            echo "ERROR: Unknown argument: $key"
+            usage
+            exit 1
+            ;;
+        *)
+            if [ "$ARCH" = "UNSET" ]; then
+                ARCH="$key"
+            elif [ "$GLIBC_VERSION" = "UNSET" ]; then
+                GLIBC_VERSION="$key"
+            else
+                echo "ERROR: Unknown argument: .$key'."
+                usage
+                exit 1
+            fi
+            ;;
+    esac
+    shift
+done
 
 if [ "$ARCH" = "UNSET" ]; then
     echo "ERROR: architecture missing."
@@ -63,18 +110,22 @@ if running_in_docker; then
 
     # Download glibc.
     echo "Downloading glibc..."
+    GLIBC_URL="http://ftp.gnu.org/gnu/glibc/glibc-$GLIBC_VERSION.tar.gz"
     curl -# -L "$GLIBC_URL" | tar xz --strip 1 -C "$SOURCE_DIR"
 
     # Compile glibc.
-    echo "Compiling glibc..."
     cd "$BUILD_DIR"
+    echo "Configuring glibc..."
     "$SOURCE_DIR"/configure \
         --prefix="$INSTALL_DIR" \
         --libdir="$INSTALL_DIR/lib" \
         --libexecdir="$INSTALL_DIR/lib" \
         --enable-multi-arch \
         $GLIBC_CONFIGURE_EXTRA_OPTS
-    make && make install
+    echo "Compiling glibc..."
+    make
+    echo "Installing glibc..."
+    make install
 
     echo "Creating glibc binary package..."
     (cd "$INSTALL_DIR" && tar --hard-dereference -zcf "/output/glibc-bin-${GLIBC_VERSION}-${ARCH}.tar.gz" *)
@@ -96,6 +147,7 @@ EOF
 
     # Run the glibc builder.
     mkdir -p "$SCRIPT_DIR"/build
-    docker run --rm -v "$SCRIPT_DIR"/build:/output glibc-builder-$ARCH "$ARCH" "$GLIBC_VERSION"
+    echo "Starting glibc build..."
+    docker run --rm -v "$SCRIPT_DIR"/build:/output glibc-builder-$ARCH "$ARCH" "$GLIBC_VERSION" > $STD_OUTPUT 2>$ERR_OUTPUT
 fi
 
