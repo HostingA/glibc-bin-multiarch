@@ -80,7 +80,7 @@ if running_in_docker; then
     (cd "$INSTALL_DIR" && tar --hard-dereference -zcf "/output/glibc-bin-${GLIBC_VERSION}-${ARCH}.tar.gz" *)
 else
     # Create the Dockerfile.
-    cat > Dockerfile <<EOF
+    cat > "$SCRIPT_DIR"/Dockerfile <<EOF
 FROM multiarch/ubuntu-debootstrap:${DOCKER_GLIBC_BUILDER_ARCH}-slim
 RUN \
     apt-get -q update && \
@@ -92,6 +92,7 @@ EOF
 
     # Build the docker image.
     (cd "$SCRIPT_DIR" && docker build -t glibc-builder-$ARCH .)
+    rm "$SCRIPT_DIR"/Dockerfile
 
     # Run the glibc builder.
     mkdir -p "$SCRIPT_DIR"/build
