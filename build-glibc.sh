@@ -88,10 +88,10 @@ ENTRYPOINT ["/build-glibc.sh"]
 EOF
 
     # Build the docker image.
-    (cd "$SCRIPT_DIR" && docker build -t glibc-builder .)
+    (cd "$SCRIPT_DIR" && docker build -t glibc-builder-$ARCH .)
 
     # Run the glibc builder.
     mkdir -p "$SCRIPT_DIR"/build
-    docker run --rm -v "$SCRIPT_DIR"/build:/output glibc-builder "$ARCH" "$GLIBC_VERSION"
+    docker run --rm -v "$SCRIPT_DIR"/build:/output glibc-builder-$ARCH "$ARCH" "$GLIBC_VERSION"
 fi
 
