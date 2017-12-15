@@ -18,6 +18,9 @@ env:
   - ARCH=armhf
   - ARCH=aarch64
 
+before_script:
+  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+
 script:
   - ./build-glibc.sh "$ARCH" "$GLIBC_VERSION"
 
