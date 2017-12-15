@@ -19,6 +19,7 @@ env:
   - ARCH=aarch64
 
 before_script:
+  - [ -z "$TRAVIS_TAG" ] || [[ "$TRAVIS_TAG" =~ ^$GLIBC_VERSION-[0-9]+$ ]]
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 script:
