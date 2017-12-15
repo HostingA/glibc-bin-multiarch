@@ -23,7 +23,7 @@ before_script:
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 script:
-  - travis_wait 30 ./build-glibc.sh "$ARCH" "$GLIBC_VERSION" > build.output 2>&1
+  - travis_wait 30 ./build-glibc.sh "$ARCH" "$GLIBC_VERSION" --output build.output
 
 after_failure:
   - echo "ERROR: glibc build failed.  Last output:"
