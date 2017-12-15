@@ -20,7 +20,6 @@ env:
 
 before_script:
   - '[ -z "$TRAVIS_TAG" ] || [[ "$TRAVIS_TAG" =~ ^$GLIBC_VERSION-[0-9]+$ ]]'
-  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 script:
   - travis_wait 30 ./build-glibc.sh "$ARCH" "$GLIBC_VERSION" --output build.output

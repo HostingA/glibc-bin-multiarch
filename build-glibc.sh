@@ -84,17 +84,15 @@ fi
 # Handle the architecture.
 case "$ARCH" in
     x86_64)
-        DOCKER_GLIBC_BUILDER_ARCH=amd64
         ;;
     x86)
-        DOCKER_GLIBC_BUILDER_ARCH=i386
         GLIBC_CONFIGURE_EXTRA_OPTS=--host=i686-pc-linux-gnu
         ;;
     armhf)
-        DOCKER_GLIBC_BUILDER_ARCH=armhf
+        GLIBC_CONFIGURE_EXTRA_OPTS=--host=arm-linux-gnueabihf
         ;;
     aarch64)
-        DOCKER_GLIBC_BUILDER_ARCH=arm64
+        GLIBC_CONFIGURE_EXTRA_OPTS=--host=aarch64-linux-gnu
         ;;
     *)
         echo "ERROR: Invalid architecture '$ARCH'."
@@ -132,22 +130,24 @@ if running_in_docker; then
 else
     # Create the Dockerfile.
     cat > "$SCRIPT_DIR"/Dockerfile <<EOF
-FROM multiarch/ubuntu-debootstrap:${DOCKER_GLIBC_BUILDER_ARCH}-slim
+FROM ubuntu:xenial
 RUN \
     apt-get -q update && \
-    apt-get -qy install build-essential wget openssl gawk curl
+    apt-get -qy install build-essential wget openssl gawk curl \
+         gcc-aarch64-linux-gnu \
+         gcc-arm-linux-gnueabihf
 ADD $(basename "$SCRIPT") /
 VOLUME ["/output"]
 ENTRYPOINT ["/build-glibc.sh"]
 EOF
 
     # Build the docker image.
-    (cd "$SCRIPT_DIR" && docker build -t glibc-builder-$ARCH .)
+    (cd "$SCRIPT_DIR" && docker build -t glibc-builder .)
     rm "$SCRIPT_DIR"/Dockerfile
 
     # Run the glibc builder.
     mkdir -p "$SCRIPT_DIR"/build
     echo "Starting glibc build..."
-    docker run --rm -v "$SCRIPT_DIR"/build:/output glibc-builder-$ARCH "$ARCH" "$GLIBC_VERSION" > $STD_OUTPUT 2>$ERR_OUTPUT
+    docker run --rm -v "$SCRIPT_DIR"/build:/output glibc-builder "$ARCH" "$GLIBC_VERSION" > $STD_OUTPUT 2>$ERR_OUTPUT
 fi
 
