@@ -19,7 +19,7 @@ env:
   - ARCH=aarch64
 
 script:
-  - build-glibc.sh "$ARCH" "$GLIBC_VERSION"
+  - ./build-glibc.sh "$ARCH" "$GLIBC_VERSION"
 
 deploy:
   provider: releases
