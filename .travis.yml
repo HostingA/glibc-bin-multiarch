@@ -1,0 +1,30 @@
+#
+# Travis CI recipe to build glibc binary packages.
+#
+
+sudo: required
+
+language: generic
+
+services:
+  - docker
+
+env:
+  global:
+  - GLIBC_VERSION=2.26
+  matrix:
+  - ARCH=x86
+  - ARCH=x86_64
+  - ARCH=armhf
+  - ARCH=aarch64
+
+script:
+  - build-glibc.sh "$ARCH" "$GLIBC_VERSION"
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file: build/*.tar.gz
+  skip_cleanup: true
+  on:
+    tags: true
