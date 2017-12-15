@@ -22,6 +22,7 @@ SCRIPT_DIR="$(dirname "$SCRIPT")"
 ARCH="${1:-UNSET}"
 GLIBC_VERSION="${2:-UNSET}"
 GLIBC_URL="http://ftp.gnu.org/gnu/glibc/glibc-$GLIBC_VERSION.tar.gz"
+GLIBC_CONFIGURE_EXTRA_OPTS=
 
 if [ "$ARCH" = "UNSET" ]; then
     echo "ERROR: architecture missing."
@@ -40,6 +41,7 @@ case "$ARCH" in
         ;;
     x86)
         DOCKER_GLIBC_BUILDER_ARCH=i386
+        GLIBC_CONFIGURE_EXTRA_OPTS=--host=i686-pc-linux-gnu
         ;;
     armhf)
         DOCKER_GLIBC_BUILDER_ARCH=armhf
@@ -70,7 +72,8 @@ if running_in_docker; then
         --prefix="$INSTALL_DIR" \
         --libdir="$INSTALL_DIR/lib" \
         --libexecdir="$INSTALL_DIR/lib" \
-        --enable-multi-arch
+        --enable-multi-arch \
+        $GLIBC_CONFIGURE_EXTRA_OPTS
     make && make install
 
     echo "Creating glibc binary package..."
