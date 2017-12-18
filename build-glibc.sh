@@ -81,6 +81,12 @@ elif [ "$GLIBC_VERSION" = "UNSET" ]; then
     exit 1
 fi
 
+# Handle glibc version format X.XX-rY.
+if [[ "$GLIBC_VERSION" =~ ^[0-9]+\.[0-9]+-r[0-9]+$ ]]; then
+    GLIBC_PKG_REVISION="${GLIBC_VERSION#*-r}"
+    GLIBC_VERSION="${GLIBC_VERSION%-r*}"
+fi
+
 # Handle the architecture.
 case "$ARCH" in
     x86_64)
@@ -130,7 +136,7 @@ if running_in_docker; then
     make install
 
     echo "Creating glibc binary package..."
-    (cd "$INSTALL_DIR" && tar --hard-dereference -zcf "/output/glibc-bin-${GLIBC_VERSION}-${ARCH}.tar.gz" *)
+    (cd "$INSTALL_DIR" && tar --hard-dereference -zcf "/output/glibc-bin-${GLIBC_VERSION}-r${GLIBC_PKG_REVISION:-0}-${ARCH}.tar.gz" *)
 else
     # Create the Dockerfile.
     cat > "$SCRIPT_DIR"/Dockerfile <<EOF

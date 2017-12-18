@@ -11,15 +11,12 @@ services:
 
 env:
   global:
-  - GLIBC_VERSION=2.26
+  - GLIBC_VERSION=${TRAVIS_TAG:-2.26}
   matrix:
   - ARCH=x86
   - ARCH=x86_64
   - ARCH=armhf
   - ARCH=aarch64
-
-before_script:
-  - '[ -z "$TRAVIS_TAG" ] || [[ "$TRAVIS_TAG" =~ ^$GLIBC_VERSION-[0-9]+$ ]]'
 
 script:
   - travis_wait 30 ./build-glibc.sh "$ARCH" "$GLIBC_VERSION" --output build.output
