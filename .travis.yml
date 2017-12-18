@@ -18,6 +18,10 @@ env:
   - ARCH=armhf
   - ARCH=aarch64
 
+before_script:
+  # Validate the glibc version format: 'X.XX' or 'X.XX-rY'.
+  - '[[ "$GLIBC_VERSION" =~ ^[0-9]+\.[0-9]+(-r[0-9]+)?$ ]]'
+
 script:
   - echo "Starting build of glibc $GLIBC_VERSION for $ARCH..."
   - travis_wait 30 ./build-glibc.sh "$ARCH" "$GLIBC_VERSION" --output build.output
