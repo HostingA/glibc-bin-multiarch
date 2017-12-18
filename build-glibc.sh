@@ -82,7 +82,7 @@ elif [ "$GLIBC_VERSION" = "UNSET" ]; then
 fi
 
 # Handle glibc version format X.XX-rY.
-if [[ "$GLIBC_VERSION" =~ ^[0-9]+\.[0-9]+-r[0-9]+$ ]]; then
+if echo "$GLIBC_VERSION" | grep -qE '^[0-9]+\.[0-9]+-r[0-9]+$'; then
     GLIBC_PKG_REVISION="${GLIBC_VERSION#*-r}"
     GLIBC_VERSION="${GLIBC_VERSION%-r*}"
 fi
