@@ -112,7 +112,7 @@ esac
 if running_in_docker; then
     SOURCE_DIR=/glibc-src
     BUILD_DIR=/glibc-build
-    INSTALL_DIR=/glibc-install
+    INSTALL_DIR=/usr/glibc-compat
 
     mkdir -p "$SOURCE_DIR" "$BUILD_DIR" "$INSTALL_DIR"
 
@@ -136,7 +136,7 @@ if running_in_docker; then
     make install
 
     echo "Creating glibc binary package..."
-    (cd "$INSTALL_DIR" && tar --hard-dereference -zcf "/output/glibc-bin-${GLIBC_VERSION}-r${GLIBC_PKG_REVISION:-0}-${ARCH}.tar.gz" *)
+    tar --hard-dereference -zcf "/output/glibc-bin-${GLIBC_VERSION}-r${GLIBC_PKG_REVISION:-0}-${ARCH}.tar.gz" "$INSTALL_DIR"
 else
     # Create the Dockerfile.
     cat > "$SCRIPT_DIR"/Dockerfile <<EOF
