@@ -81,12 +81,6 @@ elif [ "$GLIBC_VERSION" = "UNSET" ]; then
     exit 1
 fi
 
-# Handle glibc version format X.XX-rY.
-if echo "$GLIBC_VERSION" | grep -qE '^[0-9]+\.[0-9]+-r[0-9]+$'; then
-    GLIBC_PKG_REVISION="${GLIBC_VERSION#*-r}"
-    GLIBC_VERSION="${GLIBC_VERSION%-r*}"
-fi
-
 # Handle the architecture.
 case "$ARCH" in
     x86_64)
@@ -113,6 +107,12 @@ if running_in_docker; then
     SOURCE_DIR=/glibc-src
     BUILD_DIR=/glibc-build
     INSTALL_DIR=/usr/glibc-compat
+
+    # Handle glibc version format X.XX-rY.
+    if echo "$GLIBC_VERSION" | grep -qE '^[0-9]+\.[0-9]+-r[0-9]+$'; then
+        GLIBC_PKG_REVISION="${GLIBC_VERSION#*-r}"
+        GLIBC_VERSION="${GLIBC_VERSION%-r*}"
+    fi
 
     mkdir -p "$SOURCE_DIR" "$BUILD_DIR" "$INSTALL_DIR"
 
