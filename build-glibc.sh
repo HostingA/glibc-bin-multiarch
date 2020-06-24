@@ -145,7 +145,9 @@ RUN \
     apt-get -q update && \
     apt-get -qy install build-essential wget openssl gawk curl bison python3 \
          gcc-aarch64-linux-gnu \
-         gcc-arm-linux-gnueabihf
+         g++-aarch64-linux-gnu \
+         gcc-arm-linux-gnueabihf \
+         g++-arm-linux-gnueabihf
 ADD $(basename "$SCRIPT") /
 VOLUME ["/output"]
 ENTRYPOINT ["/build-glibc.sh"]
