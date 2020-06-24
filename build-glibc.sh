@@ -81,6 +81,9 @@ elif [ "$GLIBC_VERSION" = "UNSET" ]; then
     exit 1
 fi
 
+GLIBC_VERSION_MAJOR="$(echo $GLIBC_VERSION | cut -d'.' -f1)"
+GLIBC_VERSION_MINOR="$(echo $GLIBC_VERSION | cut -d'.' -f2)"
+
 # Handle the architecture.
 case "$ARCH" in
     x86_64)
@@ -138,9 +141,16 @@ if running_in_docker; then
     echo "Creating glibc binary package..."
     tar --hard-dereference -zcf "/output/glibc-bin-${GLIBC_VERSION}-r${GLIBC_PKG_REVISION:-0}-${ARCH}.tar.gz" "$INSTALL_DIR"
 else
+    if [ "$GLIBC_VERSION_MAJOR" -le 2 ] && [ "$GLIBC_VERSION_MINOR" -le 30 ]; then
+        # glibc <= 2.30
+        DOCKER_TAG=${DOCKER_GLIBC_BUILDER_ARCH}-xenial-slim
+    else
+        # glibc > 2.30
+        DOCKER_TAG=${DOCKER_GLIBC_BUILDER_ARCH}-bionic-slim
+    fi
     # Create the Dockerfile.
     cat > "$SCRIPT_DIR"/Dockerfile <<EOF
-FROM multiarch/ubuntu-debootstrap:${DOCKER_GLIBC_BUILDER_ARCH}-slim
+FROM multiarch/ubuntu-debootstrap:${DOCKER_TAG}
 RUN \
     apt-get -q update && \
     apt-get -qy install build-essential wget openssl gawk curl bison python3 \
