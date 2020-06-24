@@ -143,7 +143,7 @@ else
 FROM multiarch/ubuntu-debootstrap:${DOCKER_GLIBC_BUILDER_ARCH}-slim
 RUN \
     apt-get -q update && \
-    apt-get -qy install build-essential wget openssl gawk curl \
+    apt-get -qy install build-essential wget openssl gawk curl bison \
          gcc-aarch64-linux-gnu \
          gcc-arm-linux-gnueabihf
 ADD $(basename "$SCRIPT") /
