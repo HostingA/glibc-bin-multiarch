@@ -81,6 +81,7 @@ elif [ "$GLIBC_VERSION" = "UNSET" ]; then
     exit 1
 fi
 
+GLIBC_VERSION="$(echo $GLIBC_VERSION | cut -d'-' -f1)"
 GLIBC_VERSION_MAJOR="$(echo $GLIBC_VERSION | cut -d'.' -f1)"
 GLIBC_VERSION_MINOR="$(echo $GLIBC_VERSION | cut -d'.' -f2)"
 
