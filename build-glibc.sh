@@ -93,6 +93,10 @@ case "$ARCH" in
         DOCKER_GLIBC_BUILDER_ARCH=i386
         GLIBC_CONFIGURE_EXTRA_OPTS=--host=i686-pc-linux-gnu
         ;;
+    arm)
+        DOCKER_GLIBC_BUILDER_ARCH=amd64
+        GLIBC_CONFIGURE_EXTRA_OPTS=--host=arm-linux-gnueabi
+        ;;
     armhf)
         DOCKER_GLIBC_BUILDER_ARCH=amd64
         GLIBC_CONFIGURE_EXTRA_OPTS=--host=arm-linux-gnueabihf
@@ -153,9 +157,14 @@ else
 FROM multiarch/ubuntu-debootstrap:${DOCKER_TAG}
 RUN \
     apt-get -q update && \
-    apt-get -qy install build-essential wget openssl gawk curl bison python3 \
+    apt-get -qy --no-install-recommends install software-properties-common && \
+    add-apt-repository universe && \
+    apt-get -q update && \
+    apt-get -qy --no-install-recommends install build-essential wget openssl gawk curl bison python3 \
          gcc-aarch64-linux-gnu \
          g++-aarch64-linux-gnu \
+         gcc-arm-linux-gnueabi \
+         g++-arm-linux-gnueabi \
          gcc-arm-linux-gnueabihf \
          g++-arm-linux-gnueabihf
 ADD $(basename "$SCRIPT") /
