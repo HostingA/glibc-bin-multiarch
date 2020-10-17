@@ -2,7 +2,9 @@
 # Travis CI recipe to build glibc binary packages.
 #
 
-sudo: required
+arch: amd64
+os: linux
+dist: focal
 
 language: generic
 
@@ -28,12 +30,12 @@ script:
   - travis_wait 30 ./build-glibc.sh "$ARCH" "$GLIBC_VERSION" --output build.output
 
 after_failure:
-  - echo "ERROR: glibc build failed.  Last output:"
+  - 'echo "ERROR: glibc build failed.  Last output:"'
   - tail -n 500 build.output
 
 deploy:
   provider: releases
-  api_key: $GITHUB_TOKEN
+  token: $GITHUB_TOKEN
   file_glob: true
   file: build/*.tar.gz
   skip_cleanup: true
