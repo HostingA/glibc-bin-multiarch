@@ -31,7 +31,7 @@ script:
 
 after_failure:
   - 'echo "ERROR: glibc build failed.  Last output:"'
-  - tail -n 500 build.output
+  - tail -n 2000 build.output
 
 deploy:
   provider: releases
