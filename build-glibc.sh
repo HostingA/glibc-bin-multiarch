@@ -146,11 +146,11 @@ if running_in_docker; then
     echo "Creating glibc binary package..."
     tar --hard-dereference -zcf "/output/glibc-bin-${GLIBC_VERSION}-r${GLIBC_PKG_REVISION:-0}-${ARCH}.tar.gz" "$INSTALL_DIR"
 else
-    if [ "$GLIBC_VERSION_MAJOR" -le 2 ] && [ "$GLIBC_VERSION_MINOR" -le 29 ]; then
-        # glibc <= 2.29
+    if [ "$GLIBC_VERSION_MAJOR" -le 2 ] && [ "$GLIBC_VERSION_MINOR" -le 27 ]; then
+        # glibc <= 2.27
         DOCKER_TAG=${DOCKER_GLIBC_BUILDER_ARCH}-xenial-slim
     else
-        # glibc > 2.29
+        # glibc > 2.27
         DOCKER_TAG=${DOCKER_GLIBC_BUILDER_ARCH}-bionic-slim
     fi
     # Create the Dockerfile.
