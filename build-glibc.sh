@@ -27,7 +27,7 @@ STD_OUTPUT="/dev/stdout"
 ERR_OUTPUT="/dev/stderr"
 
 ARCH=UNSET
-GLIBC_VERSION=UNSET
+GLIBC_FULL_VERSION=UNSET
 GLIBC_CONFIGURE_EXTRA_OPTS=
 
 # Parse arguments.
@@ -59,8 +59,8 @@ do
         *)
             if [ "$ARCH" = "UNSET" ]; then
                 ARCH="$key"
-            elif [ "$GLIBC_VERSION" = "UNSET" ]; then
-                GLIBC_VERSION="$key"
+            elif [ "$GLIBC_FULL_VERSION" = "UNSET" ]; then
+                GLIBC_FULL_VERSION="$key"
             else
                 echo "ERROR: Unknown argument: .$key'."
                 usage
@@ -75,13 +75,17 @@ if [ "$ARCH" = "UNSET" ]; then
     echo "ERROR: architecture missing."
     usage
     exit 1
-elif [ "$GLIBC_VERSION" = "UNSET" ]; then
+elif [ "$GLIBC_FULL_VERSION" = "UNSET" ]; then
     echo "ERROR: glibc version missing."
     usage
     exit 1
 fi
 
-GLIBC_VERSION="$(echo $GLIBC_VERSION | cut -d'-' -f1)"
+# Handle glibc version format X.XX-rY.
+if echo "$GLIBC_FULL_VERSION" | grep -qE '^[0-9]+\.[0-9]+-r[0-9]+$'; then
+    GLIBC_PKG_REVISION="${GLIBC_FULL_VERSION#*-r}"
+fi
+GLIBC_VERSION="${GLIBC_FULL_VERSION%-r*}"
 GLIBC_VERSION_MAJOR="$(echo $GLIBC_VERSION | cut -d'.' -f1)"
 GLIBC_VERSION_MINOR="$(echo $GLIBC_VERSION | cut -d'.' -f2)"
 
@@ -115,12 +119,6 @@ if running_in_docker; then
     SOURCE_DIR=/glibc-src
     BUILD_DIR=/glibc-build
     INSTALL_DIR=/usr/glibc-compat
-
-    # Handle glibc version format X.XX-rY.
-    if echo "$GLIBC_VERSION" | grep -qE '^[0-9]+\.[0-9]+-r[0-9]+$'; then
-        GLIBC_PKG_REVISION="${GLIBC_VERSION#*-r}"
-        GLIBC_VERSION="${GLIBC_VERSION%-r*}"
-    fi
 
     mkdir -p "$SOURCE_DIR" "$BUILD_DIR" "$INSTALL_DIR"
 
@@ -180,6 +178,6 @@ EOF
     # Run the glibc builder.
     mkdir -p "$SCRIPT_DIR"/build
     echo "Starting glibc build..."
-    docker run --rm -v "$SCRIPT_DIR"/build:/output glibc-builder-${DOCKER_GLIBC_BUILDER_ARCH} "$ARCH" "$GLIBC_VERSION" > $STD_OUTPUT 2>$ERR_OUTPUT
+    docker run --rm -v "$SCRIPT_DIR"/build:/output glibc-builder-${DOCKER_GLIBC_BUILDER_ARCH} "$ARCH" "$GLIBC_FULL_VERSION" > $STD_OUTPUT 2>$ERR_OUTPUT
 fi
 
